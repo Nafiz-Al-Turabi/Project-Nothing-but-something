@@ -1,7 +1,9 @@
-import React from 'react'
+import ThemeToggle from '@/components/Theme/Toggle'
 
 export default function HomePage() {
   return (
-    <div>This is home page</div>
+    <div>
+      <ThemeToggle/>hh
+    </div>
   )
 }
