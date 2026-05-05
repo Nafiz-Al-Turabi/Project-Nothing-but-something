@@ -137,7 +137,6 @@ export default function DashboardLayout({
             </div>
           </div>
         </header>
-
         <main className="mx-auto w-full  p-4 sm:p-6">{children}</main>
       </div>
     </div>
