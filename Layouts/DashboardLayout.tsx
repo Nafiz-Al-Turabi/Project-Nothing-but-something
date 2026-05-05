@@ -134,10 +134,6 @@ export default function DashboardLayout({
 
             <div className="flex items-center gap-3">
               <ThemeToggle />
-              <div className="hidden rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900 sm:block">
-                <p className="font-medium">Nafiz</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Product Owner</p>
-              </div>
             </div>
           </div>
         </header>
