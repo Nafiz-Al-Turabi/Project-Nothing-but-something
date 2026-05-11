@@ -1,6 +1,8 @@
 "use client";
 
+import { useLoginMutation, useRegisterMutation } from "@/app/store/apis/authApis/authApis";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
@@ -18,7 +20,12 @@ type AuthFormValues = {
 
 export default function AuthForm({ mode }: AuthFormProps) {
   const [submitMessage, setSubmitMessage] = useState("");
+  const [submitError, setSubmitError] = useState("");
+  const router = useRouter();
   const isRegister = mode === "register";
+
+  const [userRegister, { isLoading: isRegisterLoading }] = useRegisterMutation();
+  const [userLogin, { isLoading: isLoginLoading }] = useLoginMutation();
 
   const {
     register,
@@ -48,7 +55,10 @@ export default function AuthForm({ mode }: AuthFormProps) {
         linkLabel: "Register",
       };
 
-  const onSubmit = (data: AuthFormValues) => {
+  const onSubmit = async (data: AuthFormValues) => {
+    setSubmitMessage("");
+    setSubmitError("");
+
     const payload = isRegister
       ? {
           username: data.username?.trim() ?? "",
@@ -60,9 +70,26 @@ export default function AuthForm({ mode }: AuthFormProps) {
           password: data.password,
         };
 
-    console.log(`${content.buttonLabel} payload:`, payload);
-    setSubmitMessage(`${content.buttonLabel} payload is ready. Check the console.`);
+    const mutation = isRegister ? userRegister : userLogin;
+
+    try {
+      const response = await mutation(payload).unwrap();
+      const token = response?.token ?? response?.data?.token;
+
+      if (token) {
+        localStorage.setItem("token", token);
+      }
+
+      setSubmitMessage(`${content.buttonLabel} successful.`);
+      router.push("/dashboard");
+    } catch (error: unknown) {
+      const apiError = error as { data?: { message?: string }; message?: string };
+      const message = apiError?.data?.message ?? apiError?.message ?? `Unable to ${mode}.`;
+      setSubmitError(message);
+    }
   };
+
+  const isMutating = isRegisterLoading || isLoginLoading;
 
   return (
     <div className="flex min-h-[90vh] items-center justify-center px-4">
@@ -132,10 +159,10 @@ export default function AuthForm({ mode }: AuthFormProps) {
 
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || isMutating}
           className="rounded-md bg-[#0f172b] px-4 py-2 font-bold text-white transition duration-300 hover:brightness-90 focus:outline-none disabled:cursor-not-allowed disabled:opacity-70 dark:bg-[#f1f5f9] dark:text-black"
         >
-          {content.buttonLabel}
+          {isSubmitting || isMutating ? "Please wait..." : content.buttonLabel}
         </button>
 
         <p className="text-center text-sm text-slate-600 dark:text-slate-300">
@@ -149,6 +176,10 @@ export default function AuthForm({ mode }: AuthFormProps) {
           <p className="text-center text-sm text-emerald-600 dark:text-emerald-400">
             {submitMessage}
           </p>
+        )}
+
+        {submitError && (
+          <p className="text-center text-sm text-red-500">{submitError}</p>
         )}
       </form>
     </div>
