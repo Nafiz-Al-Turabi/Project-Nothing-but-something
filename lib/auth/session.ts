@@ -1,5 +1,6 @@
 export const AUTH_TOKEN_COOKIE = "auth_token";
-export const AUTH_USER_TYPE_COOKIE = "auth_user_type";
+
+const LEGACY_AUTH_USER_TYPE_COOKIE = "auth_user_type";
 
 const AUTH_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
 
@@ -29,7 +30,7 @@ export function getClientCookie(name: string) {
   return decodeURIComponent(targetCookie.slice(cookiePrefix.length));
 }
 
-export function setClientAuthSession(token: string, userType?: string) {
+export function setClientAuthSession(token: string) {
   if (typeof document === "undefined") {
     return;
   }
@@ -37,13 +38,7 @@ export function setClientAuthSession(token: string, userType?: string) {
   const cookieAttributes = getCookieAttributes();
 
   document.cookie = `${AUTH_TOKEN_COOKIE}=${encodeURIComponent(token)}; ${cookieAttributes}`;
-
-  if (userType) {
-    document.cookie = `${AUTH_USER_TYPE_COOKIE}=${encodeURIComponent(userType)}; ${cookieAttributes}`;
-    return;
-  }
-
-  document.cookie = `${AUTH_USER_TYPE_COOKIE}=; path=/; max-age=0; samesite=lax`;
+  document.cookie = `${LEGACY_AUTH_USER_TYPE_COOKIE}=; path=/; max-age=0; samesite=lax`;
 }
 
 export function getPostLoginRedirectPath(userType?: string) {

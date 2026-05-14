@@ -79,7 +79,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
       const userType = response?.user?.type ?? response?.data?.user?.type;
 
       if (token) {
-        setClientAuthSession(token, userType);
+        setClientAuthSession(token);
         localStorage.removeItem("token");
         setSubmitMessage(`${content.buttonLabel} successful.`);
         router.push(getPostLoginRedirectPath(userType));
