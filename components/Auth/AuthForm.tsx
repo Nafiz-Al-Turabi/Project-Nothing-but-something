@@ -1,6 +1,7 @@
 "use client";
 
 import { useLoginMutation, useRegisterMutation } from "@/app/store/apis/authApis/authApis";
+import { getPostLoginRedirectPath, setClientAuthSession } from "@/lib/auth/session";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -75,13 +76,24 @@ export default function AuthForm({ mode }: AuthFormProps) {
     try {
       const response = await mutation(payload).unwrap();
       const token = response?.token ?? response?.data?.token;
+      const userType = response?.user?.type ?? response?.data?.user?.type;
 
       if (token) {
-        localStorage.setItem("token", token);
+        setClientAuthSession(token, userType);
+        localStorage.removeItem("token");
+        setSubmitMessage(`${content.buttonLabel} successful.`);
+        router.push(getPostLoginRedirectPath(userType));
+        router.refresh();
+        return;
       }
 
-      setSubmitMessage(`${content.buttonLabel} successful.`);
-      router.push("/dashboard");
+      if (isRegister) {
+        setSubmitMessage("Register successful. Please log in.");
+        router.push("/auth/login");
+        return;
+      }
+
+      setSubmitError("Login succeeded but no token was returned.");
     } catch (error: unknown) {
       const apiError = error as { data?: { message?: string }; message?: string };
       const message = apiError?.data?.message ?? apiError?.message ?? `Unable to ${mode}.`;
